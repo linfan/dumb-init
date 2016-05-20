@@ -33,8 +33,10 @@
 pid_t child_pid = -1;
 char debug = 0;
 char use_setsid = 1;
+char only_sigint = 0;
 
 void forward_signal(int signum) {
+    if (only_sigint) signum = 2;
     kill(use_setsid ? -child_pid : child_pid, signum);
     DEBUG("Forwarded signal %d to children.\n", signum);
 }
@@ -141,6 +143,7 @@ char **parse_command(int argc, char *argv[]) {
     struct option long_options[] = {
         {"help",         no_argument, NULL, 'h'},
         {"single-child", no_argument, NULL, 'c'},
+        {"only-sigint", no_argument, NULL, 'i'},
         {"verbose",      no_argument, NULL, 'v'},
         {"version",      no_argument, NULL, 'V'},
     };
@@ -157,6 +160,9 @@ char **parse_command(int argc, char *argv[]) {
                 exit(0);
             case 'c':
                 use_setsid = 0;
+                break;
+            case 'i':
+                only_sigint = 1;
                 break;
             default:
                 exit(1);
